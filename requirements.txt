@@ -1,0 +1,5 @@
+fastapi
+fastapi-cache2[redis]
+firebase-admin
+uvicorn[standard]
+pydantic-settings
