@@ -1,50 +1,27 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
-from datetime import datetime
-from uuid import UUID, uuid4
+import firebase_admin
+from firebase_admin import credentials, firestore
+from app.core import settings
 
-# Importamos el helper
-from .helpers import LectorInfoEmbedded
+db = None
 
-class ResenaBase(BaseModel):
-    """
-    Lo mínimo que envía un usuario para crear una reseña.
-    """
-    comentario: str = Field(..., min_length=5, max_length=5000)
-    # ge = 'greater or equal', le = 'less or equal'
-    calificacion: int = Field(..., ge=1, le=5) 
+def init_firebase():
+    global db
+    if not firebase_admin._apps:
+        certificate_dict = {
+            "type": settings.FIREBASE_TYPE,
+            "project_id": settings.FIREBASE_PROJECT_ID,
+            "private_key_id": settings.FIREBASE_PRIVATE_KEY_ID,
+            "private_key": settings.FIREBASE_PRIVATE_KEY.replace('\\n', '\n'),
+            "client_email": settings.FIREBASE_CLIENT_EMAIL,
+            "client_id": settings.FIREBASE_CLIENT_ID,
+            "auth_uri": settings.FIREBASE_AUTH_URI,
+            "token_uri": settings.FIREBASE_TOKEN_URI,
+            "auth_provider_x509_cert_url": settings.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+            "client_x509_cert_url": settings.FIREBASE_CLIENT_X509_CERT_URL,
+            "universe_domain": settings.FIREBASE_UNIVERSE_DOMAIN,
+        }
 
+        cred = credentials.Certificate(certificate_dict)
 
-class ResenaCreate(ResenaBase):
-    """
-    Modelo para el endpoint POST /libros/{libroId}/resenas
-    """
-    pass
-
-
-class ResenaUpdate(BaseModel):
-    """
-    Modelo para PATCH /.../resenas/{id}
-    (Ej. un admin moderando o un usuario editando)
-    """
-    comentario: Optional[str] = None
-    calificacion: Optional[int] = None
-    estado: Optional[Literal["pendiente", "aprobado", "rechazado"]] = None
-
-
-class ResenaInDB(ResenaBase):
-    """
-    El documento completo de la reseña como vive en Firestore.
-    """
-    id: str = Field(..., description="ID del documento de la reseña")
-    fecha: datetime = Field(default_factory=datetime.now)
-    estado: Literal["pendiente", "aprobado", "rechazado"] = "pendiente"
-
-    # ¡Info desnormalizada! Sabemos quién la escribió sin otro query.
-    lectorInfo: LectorInfoEmbedded
-    
-    # Para saber a qué libro pertenece (aunque ya está en la ruta)
-    libroId: str 
-
-    class Config:
-        from_attributes = True
+    db = firestore.client(cred)
+    return db

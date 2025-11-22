@@ -4,7 +4,7 @@ from datetime import date
 from uuid import UUID, uuid4
 
 # Importamos el helper que creamos
-from .helpers_model import AutorEmbedded
+from .helpers_model import AuthorEmbedded
 
 class LibroBase(BaseModel):
     """
@@ -13,7 +13,7 @@ class LibroBase(BaseModel):
     titulo: str = Field(..., min_length=1)
     sinopsis: str = Field(..., min_length=10)
     fechaPublicacion: date
-    autor: AutorEmbedded
+    autor: AuthorEmbedded
     generos: List[str] = []
 
 
@@ -34,7 +34,7 @@ class LibroUpdate(BaseModel):
     titulo: Optional[str] = None
     sinopsis: Optional[str] = None
     fechaPublicacion: Optional[date] = None
-    autor: Optional[AutorEmbedded] = None
+    autor: Optional[AuthorEmbedded] = None
     generos: Optional[List[str]] = None
     urlPortada: Optional[str] = None
 

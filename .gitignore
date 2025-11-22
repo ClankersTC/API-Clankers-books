@@ -1,3 +1,4 @@
 serviceAccountKey.json
 .venv
 .env
+__pycache__

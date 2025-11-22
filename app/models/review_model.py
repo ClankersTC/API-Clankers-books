@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 # Importamos el helper
-from .helpers_model import LectorInfoEmbedded
+from .helpers_model import LectorEmbedded
 
 class ResenaBase(BaseModel):
     """
@@ -40,7 +40,7 @@ class ResenaInDB(ResenaBase):
     fecha: datetime = Field(default_factory=datetime.now)
     estado: Literal["pendiente", "aprobado", "rechazado"] = "pendiente"
 
-    lectorInfo: LectorInfoEmbedded
+    lectorInfo: LectorEmbedded
     
     libroId: str 
 

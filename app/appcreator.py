@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 #from .routers import libros, auth  
-from .db.firebase_config import init_firebase
-from .services.cache_config import init_cache, close_cache
+from app.db.firebase_config import init_firebase
+from app.services.cache_config import init_cache
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,18 +19,13 @@ async def lifespan(app: FastAPI):
     # 2. Inicializar el Cache de Redis
     try:
         await init_cache()
-        print("INFO:     Conexión con Cache (Redis) establecida.")
+        print("INFO:    Inicializando el Cache")
     except Exception as e:
-        print(f"ERROR:    No se pudo conectar a Redis: {e}")
+        print(f"ERROR:    No se pudo iniciar el Cache: {e}")
 
     print("INFO:     Aplicación lista para recibir peticiones.")
     
     yield 
-    
-    # --- AL APAGAR (Shutdown) ---
-    print("INFO:     Cerrando conexiones...")
-    await close_cache()
-    print("INFO:     Conexiones cerradas. Adiós.")
 
 app = FastAPI(
     title="API-BooksClankers",
