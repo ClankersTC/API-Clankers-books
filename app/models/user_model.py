@@ -3,7 +3,6 @@ from typing import Optional, List, Literal
 from uuid import UUID, uuid4
 import re
 
-
 class UsuarioBase(BaseModel):
     """
     Campos base que todos los usuarios tienen.
@@ -55,3 +54,14 @@ class UsuarioPublic(UsuarioBase):
     class Config:
         from_attributes = True
 
+
+class UsuarioLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class TokenResponse(BaseModel):
+    idToken: str
+    refreshToken: str
+    expiresIn: str
+    localId: str 
+    userData: Optional[UsuarioPublic] = None

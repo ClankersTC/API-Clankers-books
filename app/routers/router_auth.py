@@ -1,7 +1,13 @@
 from fastapi import APIRouter, HTTPException, status
 from firebase_admin import firestore,auth
-from app.db import db as DataBase
-from app.models import UsuarioCreate, UsuarioPublic
+import requests
+from app.models import (
+    UsuarioPublic,
+    UsuarioCreate,
+    UsuarioLogin,
+    TokenResponse
+)
+from app.core import settings
 
 router = APIRouter()
 
@@ -28,7 +34,9 @@ async def register_user(user: UsuarioCreate):
             "fechaRegistro": firestore.SERVER_TIMESTAMP
         }
 
-        DataBase.collection("users").document(user_record.uid).set(user_data)
+        db = firestore.client()
+
+        db.collection("users").document(user_record.uid).set(user_data)
 
         return user_data
     
@@ -50,3 +58,55 @@ async def register_user(user: UsuarioCreate):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Ocurrió un error interno al procesar el registro."
         )
+
+
+@router.post("/login", response_model=TokenResponse)
+async def login_user(user: UsuarioLogin):
+    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={settings.FIREBASE_API_KEY}"
+    
+    payload = {
+        "email": user.email,
+        "password": user.password,
+        "returnSecureToken": True
+    }
+
+    response = requests.post(url, json=payload)
+    
+    if response.status_code != 200:
+        error_data = response.json()
+        error_msg = error_data.get("error", {}).get("message", "Login failed")
+        
+        if "INVALID_PASSWORD" in error_msg or "EMAIL_NOT_FOUND" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="Credenciales incorrectas"
+            )
+        elif "USER_DISABLED" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, 
+                detail="Cuenta deshabilitada"
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_msg
+            )
+
+    auth_data = response.json()
+    
+    
+    db = firestore.client() 
+    user_doc = db.collection("users").document(auth_data["localId"]).get()
+    
+    user_info = None
+    if user_doc.exists:
+        user_info = user_doc.to_dict()
+        user_info['id'] = auth_data["localId"]
+
+    return {
+        "idToken": auth_data["idToken"],           # El Token JWT para usar la API
+        "refreshToken": auth_data["refreshToken"], # Para renovar sesión
+        "expiresIn": auth_data["expiresIn"],
+        "localId": auth_data["localId"],
+        "userData": user_info 
+    }
