@@ -2,13 +2,13 @@ from pydantic import BaseModel, Field, computed_field
 from typing import Optional
 from datetime import date, datetime
 from app.utils.time_utils import calculate_time_ago 
-
+from datetime import datetime
 class ReviewCreate(BaseModel):
     rating: float = Field(..., ge=1, le=10)
     reviewText: str = Field(..., min_length=1, max_length=5000)
     hasSpoilers: bool = False
-    startedDate: Optional[date] = None
-    finishedDate: Optional[date] = None
+    startedDate: Optional[datetime] = None
+    finishedDate: Optional[datetime] = None
 
 class ReviewResponse(ReviewCreate):
     id: str
