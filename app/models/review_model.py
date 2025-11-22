@@ -1,48 +1,32 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
-from datetime import datetime
-from uuid import UUID, uuid4
+from pydantic import BaseModel, Field, computed_field
+from typing import Optional
+from datetime import date, datetime
+from app.utils.time_utils import calculate_time_ago 
 
-# Importamos el helper
-from .helpers_model import LectorEmbedded
+class ReviewCreate(BaseModel):
+    rating: float = Field(..., ge=1, le=10)
+    reviewText: str = Field(..., min_length=1, max_length=5000)
+    hasSpoilers: bool = False
+    startedDate: Optional[date] = None
+    finishedDate: Optional[date] = None
 
-class ResenaBase(BaseModel):
-    """
-    Lo mínimo que envía un usuario para crear una reseña.
-    """
-    comentario: str = Field(..., min_length=5, max_length=5000)
-    # ge = 'greater or equal', le = 'less or equal'
-    calificacion: int = Field(..., ge=1, le=5) 
+class ReviewResponse(ReviewCreate):
+    id: str
+    bookId: str
+    userId: str 
+    reviewerName: str
+    avatar: Optional[str] = None
+    createdAt: datetime
 
-
-class ResenaCreate(ResenaBase):
-    """
-    Modelo para el endpoint POST /libros/{libroId}/resenas
-    """
-    pass
-
-
-class ResenaUpdate(BaseModel):
-    """
-    Modelo para PATCH /.../resenas/{id}
-    (Ej. un admin moderando o un usuario editando)
-    """
-    comentario: Optional[str] = None
-    calificacion: Optional[int] = None
-    estado: Optional[Literal["pendiente", "aprobado", "rechazado"]] = None
-
-
-class ResenaInDB(ResenaBase):
-    """
-    El documento completo de la reseña como vive en Firestore.
-    """
-    id: str = Field(..., description="ID del documento de la reseña")
-    fecha: datetime = Field(default_factory=datetime.now)
-    estado: Literal["pendiente", "aprobado", "rechazado"] = "pendiente"
-
-    lectorInfo: LectorEmbedded
-    
-    libroId: str 
+    @computed_field
+    def timeAgo(self) -> str:
+        return calculate_time_ago(self.createdAt)
 
     class Config:
         from_attributes = True
+
+class ReviewUpdate(BaseModel):
+    rating: Optional[float] = Field(None, ge=1, le=10)
+    reviewText: Optional[str] = Field(None, min_length=1, max_length=5000)
+    hasSpoilers: Optional[bool] = None
+    finishedDate: Optional[str] = None 

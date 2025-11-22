@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from firebase_admin import firestore,auth
 import requests
+from datetime import datetime
 from app.models import (
     UsuarioPublic,
     UsuarioCreate,
@@ -29,9 +30,10 @@ async def register_user(user: UsuarioCreate):
             "id" : user_record.uid,
             "username": user.username,
             "email": user.email,
-            "rol": "lector",
-            "preferencias": [],
-            "fechaRegistro": firestore.SERVER_TIMESTAMP
+            "role": "lector",
+            "preferences": [],
+            "profileImgURL": None,
+            "dateRegister": datetime.now()
         }
 
         db = firestore.client()
@@ -93,20 +95,26 @@ async def login_user(user: UsuarioLogin):
             )
 
     auth_data = response.json()
-    
+    uid = auth_data["localId"]
     
     db = firestore.client() 
-    user_doc = db.collection("users").document(auth_data["localId"]).get()
-    
+    user_ref = db.collection("users").document(uid)
+    try:
+        user_ref.update({"lastConection": datetime.now()})
+    except Exception as e:
+        print(f"Advertencia: No se pudo actualizar ultimaConexion para {uid}: {e}")
+
+    user_doc = user_ref.get()
+
     user_info = None
     if user_doc.exists:
         user_info = user_doc.to_dict()
-        user_info['id'] = auth_data["localId"]
+        user_info['id'] = uid
 
     return {
         "idToken": auth_data["idToken"],           # El Token JWT para usar la API
         "refreshToken": auth_data["refreshToken"], # Para renovar sesión
         "expiresIn": auth_data["expiresIn"],
-        "localId": auth_data["localId"],
+        "localId": uid,
         "userData": user_info 
     }

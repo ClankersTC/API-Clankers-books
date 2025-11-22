@@ -14,16 +14,15 @@ from .user_model import (
 )
 
 from .libro_model import (
-    LibroBase,
-    LibroCreate,
-    LibroUpdate,
-    LibroInDB
+    BookBase,
+    BookCreate,
+    BookResponse,
+    BookUpdate
 )
 
 #Reviews
 from .review_model import (
-    ResenaBase,
-    ResenaCreate,
-    ResenaUpdate,
-    ResenaInDB
+    ReviewCreate,
+    ReviewResponse,
+    ReviewUpdate,
 )
