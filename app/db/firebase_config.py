@@ -22,6 +22,7 @@ def init_firebase():
         }
 
         cred = credentials.Certificate(certificate_dict)
-
-    db = firestore.client(cred)
+        firebase_admin.initialize_app(cred)
+        
+    db = firestore.client()
     return db

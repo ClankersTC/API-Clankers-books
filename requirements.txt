@@ -3,3 +3,5 @@ fastapi-cache2[redis]
 firebase-admin
 uvicorn[standard]
 pydantic-settings
+pydantic[email]
+python-dotenv

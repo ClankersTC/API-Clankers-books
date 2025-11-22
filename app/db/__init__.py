@@ -1,1 +1,1 @@
-from .firebase_config import init_firebase
+from .firebase_config import init_firebase, db

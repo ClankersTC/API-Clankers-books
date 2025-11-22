@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-#from .routers import libros, auth  
+from .routers import (
+    auth_router
+)  
 from app.db.firebase_config import init_firebase
 from app.services.cache_config import init_cache
 
@@ -34,8 +36,8 @@ app = FastAPI(
     lifespan=lifespan  
 )
 
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["Auth"])
 #app.include_router(libros.router, prefix="/api/v1/libros", tags=["Libros"])
-#app.include_router(auth.router, prefix="/api/v1/auth", tags=["Autenticación"])
 
 @app.get("/", tags=["Root"])
 async def read_root():
