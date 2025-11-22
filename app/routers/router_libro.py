@@ -6,7 +6,7 @@ from typing import List
 
 from app.models.libro_model import BookCreate, BookUpdate, BookResponse
 from app.core.security import get_current_user, get_current_admin
-
+from app.utils import build_book_key
 router = APIRouter()
 
 
@@ -103,7 +103,7 @@ async def get_books_by_genre(
 @router.get("/{book_id}", response_model=BookResponse)
 @cache(
     expire=1800,
-    key_builder=lambda f, *args, **kwargs: f"book:{kwargs['book_id']}"
+    key_builder=build_book_key
 )
 async def get_book_by_id(
     book_id: str,
