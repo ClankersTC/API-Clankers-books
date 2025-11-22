@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from .routers import (
     auth_router,
@@ -37,6 +38,21 @@ app = FastAPI(
     description="API de Clankers.",
     version="1.0",
     lifespan=lifespan  
+)
+
+origins = [
+    "http://localhost:3000",         # Frontend local
+    "http://localhost:8000/docs"     # Swagger Test
+    "https://mis-libros.vercel.app", # Frontend en producción
+    "https://clankers-reading.com"   # Dominio Real
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth_router, prefix="/clankers/auth", tags=["Auth"])
