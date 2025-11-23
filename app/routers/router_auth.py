@@ -6,7 +6,8 @@ from app.models import (
     UsuarioPublic,
     UsuarioCreate,
     UsuarioLogin,
-    TokenResponse
+    TokenResponse,
+    RefreshRequest
 )
 from app.core import settings
 
@@ -117,4 +118,32 @@ async def login_user(user: UsuarioLogin):
         "expiresIn": auth_data["expiresIn"],
         "localId": uid,
         "userData": user_info 
+    }
+
+
+@router.post("/refresh")
+async def refresh_token(data: RefreshRequest):
+
+    url = f"https://securetoken.googleapis.com/v1/token?key={settings.FIREBASE_API_KEY}"
+    
+    payload = {
+        "grant_type": "refresh_token",
+        "refresh_token": data.refreshToken
+    }
+
+    response = requests.post(url, json=payload)
+    
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Sesión expirada o inválida"
+        )
+
+    auth_data = response.json()
+    
+    return {
+        "idToken": auth_data["access_token"], 
+        "refreshToken": auth_data["refresh_token"],
+        "expiresIn": auth_data["expires_in"],
+        "localId": auth_data["user_id"]
     }

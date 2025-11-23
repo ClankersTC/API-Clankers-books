@@ -60,6 +60,9 @@ class TokenResponse(BaseModel):
     localId: str 
     userData: Optional[UsuarioPublic] = None
 
+class RefreshRequest(BaseModel):
+    refreshToken: str
+
 class UsuarioUpdate(BaseModel):
     username: Optional[str] = Field(None, min_length=6, max_length=50)
     profileImgURL: Optional[str] = None

@@ -10,7 +10,8 @@ from .user_model import (
     UsuarioCreate,
     UsuarioPublic,
     UsuarioLogin,
-    TokenResponse
+    TokenResponse,
+    RefreshRequest
 )
 
 from .libro_model import (
